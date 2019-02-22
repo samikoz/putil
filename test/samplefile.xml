@@ -1,0 +1,81 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<gml:FeatureCollection xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:bt="urn:gugik:specyfikacje:gmlas:modelPodstawowy:1.0" xmlns:mua="urn:gugik:specyfikacje:gmlas:ewidencjaMiejscowosciUlicAdresow:1.0" xmlns:prg-ad="urn:gugik:specyfikacje:gmlas:panstwowyRejestrGranicAdresy:1.0" gml:id="prg-ad">
+  <gml:featureMembers>
+    <prg-ad:PRG_PunktAdresowy gml:id="PL.ZIPIN.2837.EMUiA_30000000000090000015">
+      <gml:identifier codeSpace="http://geoportal.gov.pl/">http://geoportal.gov.pl/PZGIK/dane/PL.ZIPIN.2837.EMUiA/30000000000090000015</gml:identifier>
+      <prg-ad:idIIP>
+        <bt:BT_Identyfikator>
+          <bt:lokalnyId>2b266814-afc0-4435-8fc0-9fc0d75b5e28</bt:lokalnyId>
+          <bt:przestrzenNazw>PL.PZGIK.200</bt:przestrzenNazw>
+          <bt:wersjaId>2016-11-27T09:24:20+02:00</bt:wersjaId>
+        </bt:BT_Identyfikator>
+      </prg-ad:idIIP>
+      <prg-ad:cyklZycia>
+        <bt:BT_CyklZyciaInfo>
+          <bt:poczatekWersjiObiektu>2016-11-27T09:24:20Z</bt:poczatekWersjiObiektu>
+        </bt:BT_CyklZyciaInfo>
+      </prg-ad:cyklZycia>
+      <prg-ad:waznyOd>2013-11-14</prg-ad:waznyOd>
+      <prg-ad:jednostkaAdmnistracyjna>Polska</prg-ad:jednostkaAdmnistracyjna>
+      <prg-ad:jednostkaAdmnistracyjna>pomorskie</prg-ad:jednostkaAdmnistracyjna>
+      <prg-ad:jednostkaAdmnistracyjna>bytowski</prg-ad:jednostkaAdmnistracyjna>
+      <prg-ad:jednostkaAdmnistracyjna>Borzytuchom</prg-ad:jednostkaAdmnistracyjna>
+      <prg-ad:miejscowosc>Borzytuchom</prg-ad:miejscowosc>
+      <prg-ad:czescMiejscowosci nilReason="inapplicable" xsi:nil="true" />
+      <prg-ad:ulica>Juliusza Słowackiego</prg-ad:ulica>
+      <prg-ad:numerPorzadkowy>13</prg-ad:numerPorzadkowy>
+      <prg-ad:kodPocztowy>77-141</prg-ad:kodPocztowy>
+      <prg-ad:status>istniejacy</prg-ad:status>
+      <prg-ad:pozycja>
+        <gml:Point srsName="urn:ogc:def:crs:EPSG::2180" srsDimension="2" gml:id="PL.PZGIK.200_2b266814-afc0-4435-8fc0-9fc0d75b5e28_GEO_1">
+          <gml:pos>705563.8738 394651.9761</gml:pos>
+        </gml:Point>
+      </prg-ad:pozycja>
+      <prg-ad:komponent xlink:href="http://geoportal.gov.pl/PZGIK/dane/PL.PZGIK.200_366263" />
+      <prg-ad:komponent xlink:href="http://geoportal.gov.pl/PZGIK/dane/PL.PZGIK.200_366274" />
+      <prg-ad:komponent xlink:href="http://geoportal.gov.pl/PZGIK/dane/PL.PZGIK.200_366446" />
+      <prg-ad:komponent xlink:href="http://geoportal.gov.pl/PZGIK/dane/PL.PZGIK.200_368752" />
+      <prg-ad:komponent xlink:href="http://geoportal.gov.pl/PZGIK/dane/PL.ZIPIN.2837.EMUiA_10000000000000381846" />
+      <prg-ad:komponent xlink:href="http://geoportal.gov.pl/PZGIK/dane/PL.ZIPIN.2837.EMUiA_20000000000090000000" />
+      <prg-ad:obiektEMUiA xlink:href="http://geoportal.gov.pl/PZGIK/dane/PL.ZIPIN.2837.EMUiA/30000000000090000015" />
+    </prg-ad:PRG_PunktAdresowy>
+    <prg-ad:PRG_PunktAdresowy gml:id="PL.ZIPIN.2837.EMUiA_30000000000090000056">
+      <gml:identifier codeSpace="http://geoportal.gov.pl/">http://geoportal.gov.pl/PZGIK/dane/PL.ZIPIN.2837.EMUiA/30000000000090000056</gml:identifier>
+      <prg-ad:idIIP>
+        <bt:BT_Identyfikator>
+          <bt:lokalnyId>959bef0a-aa34-447f-964e-cac4a76280d5</bt:lokalnyId>
+          <bt:przestrzenNazw>PL.PZGIK.200</bt:przestrzenNazw>
+          <bt:wersjaId>2016-11-27T09:24:21+02:00</bt:wersjaId>
+        </bt:BT_Identyfikator>
+      </prg-ad:idIIP>
+      <prg-ad:cyklZycia>
+        <bt:BT_CyklZyciaInfo>
+          <bt:poczatekWersjiObiektu>2016-11-27T09:24:21Z</bt:poczatekWersjiObiektu>
+        </bt:BT_CyklZyciaInfo>
+      </prg-ad:cyklZycia>
+      <prg-ad:waznyOd>2012-05-08</prg-ad:waznyOd>
+      <prg-ad:jednostkaAdmnistracyjna>Polska</prg-ad:jednostkaAdmnistracyjna>
+      <prg-ad:jednostkaAdmnistracyjna>pomorskie</prg-ad:jednostkaAdmnistracyjna>
+      <prg-ad:jednostkaAdmnistracyjna>bytowski</prg-ad:jednostkaAdmnistracyjna>
+      <prg-ad:jednostkaAdmnistracyjna>Borzytuchom</prg-ad:jednostkaAdmnistracyjna>
+      <prg-ad:miejscowosc>Borzytuchom</prg-ad:miejscowosc>
+      <prg-ad:czescMiejscowosci nilReason="inapplicable" xsi:nil="true" />
+      <prg-ad:ulica>Juliusza Słowackiego</prg-ad:ulica>
+      <prg-ad:numerPorzadkowy>10</prg-ad:numerPorzadkowy>
+      <prg-ad:kodPocztowy>77-141</prg-ad:kodPocztowy>
+      <prg-ad:status>istniejacy</prg-ad:status>
+      <prg-ad:pozycja>
+        <gml:Point srsName="urn:ogc:def:crs:EPSG::2180" srsDimension="2" gml:id="PL.PZGIK.200_959bef0a-aa34-447f-964e-cac4a76280d5_GEO_2">
+          <gml:pos>705283.4627 394775.0149</gml:pos>
+        </gml:Point>
+      </prg-ad:pozycja>
+      <prg-ad:komponent xlink:href="http://geoportal.gov.pl/PZGIK/dane/PL.PZGIK.200_366263" />
+      <prg-ad:komponent xlink:href="http://geoportal.gov.pl/PZGIK/dane/PL.PZGIK.200_366274" />
+      <prg-ad:komponent xlink:href="http://geoportal.gov.pl/PZGIK/dane/PL.PZGIK.200_366446" />
+      <prg-ad:komponent xlink:href="http://geoportal.gov.pl/PZGIK/dane/PL.PZGIK.200_368752" />
+      <prg-ad:komponent xlink:href="http://geoportal.gov.pl/PZGIK/dane/PL.ZIPIN.2837.EMUiA_10000000000000381846" />
+      <prg-ad:komponent xlink:href="http://geoportal.gov.pl/PZGIK/dane/PL.ZIPIN.2837.EMUiA_20000000000090000000" />
+      <prg-ad:obiektEMUiA xlink:href="http://geoportal.gov.pl/PZGIK/dane/PL.ZIPIN.2837.EMUiA/30000000000090000056" />
+    </prg-ad:PRG_PunktAdresowy>
+  </gml:featureMembers>
+</gml:FeatureCollection>
