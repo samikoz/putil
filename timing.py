@@ -7,12 +7,12 @@ class Timings:
     """only single-positional-argument functions are supported.
     if need be for more arguments, use functools.partial."""
 
-    # think a little about the width with time as well
     # sorting logic
     # labelling arguments
 
     def __init__(self, functions, count=1000, arguments=()):
         self.__column_width = 20
+        self.__column_width += self.__column_width % 4  # make sure divisible by 4
 
         self.__funcs = functions
         self.__args = [TimingArgument(arg) for arg in arguments] if arguments else [TimingArgument()]
@@ -30,7 +30,7 @@ class Timings:
             print(' ' + '-' * (row_length-1))
 
     def __print_header(self):
-        header = functools.reduce(lambda s, f: s + (' {0:>' + str(self.__column_width) + '} |').format(self.__get_function_description(f)), self.__funcs, '')
+        header = functools.reduce(lambda s, f: s + (' {0:^' + str(self.__column_width) + '} |').format(self.__get_function_description(f)), self.__funcs, '')
         header_length = len(header)
         print(header)
         print(' ' + '-' * (header_length-1))
@@ -62,24 +62,21 @@ class Measurement:
         return [result/least_result*100 - 100 for result in timing_results]
 
     def print(self, width):
-        for result in self.__results:
+        for result, ratio in zip(self.__results, self.__percent_ratios):
             print(self.__format_single_measurement(result, width), end='')
-        print()
-
-        for ratio in self.__percent_ratios:
             print(self.__format_single_ratio(ratio, width), end='')
         self.__arg.print()
 
     @staticmethod
     def __format_single_measurement(elapsed, width):
-        return (' {0:' + str(width) + '.2e} |').format(elapsed)
+        return (' {0:<' + str((width//2)-1) + '.2e} ').format(elapsed)
 
     @staticmethod
     def __format_single_ratio(ratio, width):
         if abs(ratio) > 1e-5:
-            return (' {0:+' + str(width-1) + '.2f}% |').format(ratio)
+            return (' {0:+' + str((width//2)-2) + '.2f}% |').format(ratio)
         else:
-            return ' ' * width + '- |'
+            return ' ' * (width//4) + '-' + ' ' * (width//4) + '|'
 
 
 class TimingArgument:
