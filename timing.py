@@ -8,7 +8,6 @@ class Timings:
     if need be for more arguments, use functools.partial."""
 
     # think a little about the width with time as well
-    # and diffs n ratios to the top
     # sorting logic
     # labelling arguments
 
@@ -23,14 +22,17 @@ class Timings:
         return Measurement(self.__funcs, self.__count, argument)
 
     def print(self):
-        self.__print_header()
+        row_length = self.__print_header()
         for measurement in self.__measurements:
             measurement.print()
+            print(' ' + '-' * (row_length-1))
 
     def __print_header(self):
         header = functools.reduce(lambda s, f: s + f' {self.__get_function_description(f)} |', self.__funcs, '')
+        header_length = len(header)
         print(header)
-        print(' ' + '-' * (len(header)-1))
+        print(' ' + '-' * (header_length-1))
+        return header_length
 
     @staticmethod
     def __get_function_description(f):
@@ -44,6 +46,7 @@ class Measurement:
         self.__arg = argument
 
         self.__results = [self.__measure_single(f) for f in functions]
+        self.__percent_ratios = self.__compute_ratios(self.__results)
 
     def __measure_single(self, f):
         elapsed = 0
@@ -52,14 +55,30 @@ class Measurement:
 
         return elapsed
 
+    @staticmethod
+    def __compute_ratios(timing_results):
+        least_result = min(timing_results)
+        return [result/least_result*100 - 100 for result in timing_results]
+
     def print(self):
         for result in self.__results:
             print(self.__format_single_measurement(result), end='')
+        print()
+
+        for ratio in self.__percent_ratios:
+            print(self.__format_single_ratio(ratio), end='')
         self.__arg.print()
 
     @staticmethod
     def __format_single_measurement(elapsed):
         return f' {elapsed:12e} |'
+
+    @staticmethod
+    def __format_single_ratio(ratio):
+        if abs(ratio) > 1e-5:
+            return f' {ratio:+11.2f}% |'
+        else:
+            return ' ' * 12 + '- |'
 
 
 class TimingArgument:
