@@ -1,4 +1,5 @@
 import time
+import functools
 import itertools
 
 
@@ -27,9 +28,9 @@ class Timings:
             measurement.print()
 
     def __print_header(self):
-        for func in self.__funcs:
-            print(f' {self.__get_function_description(func)} |', end='')
-        print()
+        header = functools.reduce(lambda s, f: s + f' {self.__get_function_description(f)} |', self.__funcs, '')
+        print(header)
+        print(' ' + '-' * (len(header)-1))
 
     @staticmethod
     def __get_function_description(f):
