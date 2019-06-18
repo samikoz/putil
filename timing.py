@@ -12,6 +12,8 @@ class Timings:
     # labelling arguments
 
     def __init__(self, functions, count=1000, arguments=()):
+        self.__column_width = 20
+
         self.__funcs = functions
         self.__args = [TimingArgument(arg) for arg in arguments] if arguments else [TimingArgument()]
         self.__count = count
@@ -24,19 +26,18 @@ class Timings:
     def print(self):
         row_length = self.__print_header()
         for measurement in self.__measurements:
-            measurement.print()
+            measurement.print(self.__column_width)
             print(' ' + '-' * (row_length-1))
 
     def __print_header(self):
-        header = functools.reduce(lambda s, f: s + f' {self.__get_function_description(f)} |', self.__funcs, '')
+        header = functools.reduce(lambda s, f: s + (' {0:>' + str(self.__column_width) + '} |').format(self.__get_function_description(f)), self.__funcs, '')
         header_length = len(header)
         print(header)
         print(' ' + '-' * (header_length-1))
         return header_length
 
-    @staticmethod
-    def __get_function_description(f):
-        return f.__doc__ or f.__name__
+    def __get_function_description(self, f):
+        return f.__doc__[:self.__column_width] if f.__doc__ else f.__name__[:self.__column_width]
 
 
 class Measurement:
@@ -53,32 +54,32 @@ class Measurement:
         for _ in itertools.repeat(None, self.__count):
             elapsed += self.__arg.apply_timed(f)
 
-        return elapsed
+        return elapsed/self.__count
 
     @staticmethod
     def __compute_ratios(timing_results):
         least_result = min(timing_results)
         return [result/least_result*100 - 100 for result in timing_results]
 
-    def print(self):
+    def print(self, width):
         for result in self.__results:
-            print(self.__format_single_measurement(result), end='')
+            print(self.__format_single_measurement(result, width), end='')
         print()
 
         for ratio in self.__percent_ratios:
-            print(self.__format_single_ratio(ratio), end='')
+            print(self.__format_single_ratio(ratio, width), end='')
         self.__arg.print()
 
     @staticmethod
-    def __format_single_measurement(elapsed):
-        return f' {elapsed:12e} |'
+    def __format_single_measurement(elapsed, width):
+        return (' {0:' + str(width) + '.2e} |').format(elapsed)
 
     @staticmethod
-    def __format_single_ratio(ratio):
+    def __format_single_ratio(ratio, width):
         if abs(ratio) > 1e-5:
-            return f' {ratio:+11.2f}% |'
+            return (' {0:+' + str(width-1) + '.2f}% |').format(ratio)
         else:
-            return ' ' * 12 + '- |'
+            return ' ' * width + '- |'
 
 
 class TimingArgument:
@@ -112,7 +113,7 @@ if __name__ == '__main__':
         return value**2/13
 
     def described_function(value):
-        """function_two"""
+        """function_two_two_two_twentytwo"""
         return 156*(value % 12)
 
     Timings([function_one, described_function], 1000, (12, 25)).print()
