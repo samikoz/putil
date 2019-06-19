@@ -8,7 +8,7 @@ class Timings:
     if need be for more arguments, use functools.partial."""
 
     # sorting logic
-    # labelling arguments
+    # restructure TimingArgument into itself and EmptyTimingArgument
 
     def __init__(self, functions, count=1000, arguments=()):
         self.__column_width = 20
@@ -18,9 +18,9 @@ class Timings:
         self.__args = [TimingArgument(arg) for arg in arguments] if arguments else [TimingArgument()]
         self.__count = count
 
-        self.__measurements = [self.__measure_arg(argument) for argument in self.__args]
+        self.__measurements = [self.__measure_argument(argument) for argument in self.__args]
 
-    def __measure_arg(self, argument):
+    def __measure_argument(self, argument):
         return Measurement(self.__funcs, self.__count, argument)
 
     def print(self):
@@ -32,7 +32,9 @@ class Timings:
     def __print_header(self):
         header = functools.reduce(lambda s, f: s + (' {0:^' + str(self.__column_width) + '} |').format(self.__get_function_description(f)), self.__funcs, '')
         header_length = len(header)
-        print(header)
+        print(header, end='')
+        print('| arguments |')
+        header_length += 13
         print(' ' + '-' * (header_length-1))
         return header_length
 
@@ -81,8 +83,7 @@ class Measurement:
 
 class TimingArgument:
     class Empty:
-        """marker class"""
-        pass
+        description = ''
 
     def __init__(self, arg=Empty()):
         self.__value = arg
@@ -94,15 +95,15 @@ class TimingArgument:
             end = time.time()
         else:
             start = time.time()
-            f(self.__value)
+            f(self.__value.value if hasattr(self.__value, 'value') else self.__value)
             end = time.time()
         return end - start
 
     def print(self):
-        if isinstance(self.__value, TimingArgument.Empty):
-            print()
+        if hasattr(self.__value, 'description'):
+            print(f'| {self.__value.description[:9]:>9} |')
         else:
-            print(f' {self.__value}')
+            print(f'| {str(self.__value)[:9]:>9} |')
 
 
 if __name__ == '__main__':
@@ -113,4 +114,10 @@ if __name__ == '__main__':
         """function_two_two_two_twentytwo"""
         return 156*(value % 12)
 
-    Timings([function_one, described_function], 1000, (12, 25)).print()
+    class TwentyFive:
+        description = "twentyfive-twentyfive"
+        value = 25
+
+    Timings([function_one, described_function], 1000, (12, TwentyFive())).print()
+
+    Timings([lambda: function_one(10), lambda: described_function(7)]).print()
