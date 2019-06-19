@@ -1,3 +1,4 @@
+import abc
 import time
 import functools
 import itertools
@@ -8,14 +9,13 @@ class Timings:
     if need be for more arguments, use functools.partial."""
 
     # sorting logic
-    # restructure TimingArgument into itself and EmptyTimingArgument
 
     def __init__(self, functions, count=1000, arguments=()):
         self.__column_width = 20
         self.__column_width += self.__column_width % 4  # make sure divisible by 4
 
         self.__funcs = functions
-        self.__args = [TimingArgument(arg) for arg in arguments] if arguments else [TimingArgument()]
+        self.__args = [RegularTimingArgument(arg) for arg in arguments] if arguments else [VacuousTimingArgument()]
         self.__count = count
 
         self.__measurements = [self.__measure_argument(argument) for argument in self.__args]
@@ -33,8 +33,7 @@ class Timings:
         header = functools.reduce(lambda s, f: s + (' {0:^' + str(self.__column_width) + '} |').format(self.__get_function_description(f)), self.__funcs, '')
         header_length = len(header)
         print(header, end='')
-        print('| arguments |')
-        header_length += 13
+        header_length += self.__args[0].print_header()
         print(' ' + '-' * (header_length-1))
         return header_length
 
@@ -81,22 +80,28 @@ class Measurement:
             return ' ' * (width//4) + '-' + ' ' * (width//4) + '|'
 
 
-class TimingArgument:
-    class Empty:
-        description = ''
+class TimingArgument(metaclass=abc.ABCMeta):
+    @abc.abstractmethod
+    def apply_timed(self, f):
+        pass
 
-    def __init__(self, arg=Empty()):
+    @abc.abstractmethod
+    def print(self):
+        pass
+
+    @abc.abstractmethod
+    def print_header(self):
+        pass
+
+
+class RegularTimingArgument(TimingArgument):
+    def __init__(self, arg):
         self.__value = arg
 
     def apply_timed(self, f):
-        if isinstance(self.__value, TimingArgument.Empty):
-            start = time.time()
-            f()
-            end = time.time()
-        else:
-            start = time.time()
-            f(self.__value.value if hasattr(self.__value, 'value') else self.__value)
-            end = time.time()
+        start = time.time()
+        f(self.__value.value if hasattr(self.__value, 'value') else self.__value)
+        end = time.time()
         return end - start
 
     def print(self):
@@ -104,6 +109,25 @@ class TimingArgument:
             print(f'| {self.__value.description[:9]:>9} |')
         else:
             print(f'| {str(self.__value)[:9]:>9} |')
+
+    def print_header(self):
+        print('| arguments |')
+        return 13
+
+
+class VacuousTimingArgument(TimingArgument):
+    def apply_timed(self, f):
+        start = time.time()
+        f()
+        end = time.time()
+        return end - start
+
+    def print(self):
+        print()
+
+    def print_header(self):
+        print()
+        return 0
 
 
 if __name__ == '__main__':
@@ -119,5 +143,7 @@ if __name__ == '__main__':
         value = 25
 
     Timings([function_one, described_function], 1000, (12, TwentyFive())).print()
+
+    print()
 
     Timings([lambda: function_one(10), lambda: described_function(7)]).print()
