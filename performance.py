@@ -22,7 +22,7 @@ class PerformanceComparator:
         self.__count = count
 
         self.__measurements = [self.__measure_argument(argument) for argument in self.__args]
-        self.__sort_within_measurements(self.__measurements)
+        self.__sort_measurements()
 
     @staticmethod
     def __wrap_argument(argument):
@@ -34,8 +34,12 @@ class PerformanceComparator:
     def __measure_argument(self, argument):
         return PerformanceMeasurement(self.__funcs, self.__count, argument)
 
-    def __sort_within_measurements(self, measurements):
-        sorted_indices = [measurement.get_indices_sorted_by_timings() for measurement in measurements]
+    def __sort_measurements(self):
+        ordering = self.__produce_final_ordering()
+        self.__sort_using_ordering(ordering)
+
+    def __produce_final_ordering(self):
+        sorted_indices = [measurement.get_indices_sorted_by_timings() for measurement in self.__measurements]
 
         resultant = []
         for n in range(len(self.__funcs)):
@@ -44,8 +48,11 @@ class PerformanceComparator:
             for indices in sorted_indices:
                 indices.remove(most_common)
 
-        for measurement in measurements:
-            measurement.sort(resultant)
+        return resultant
+
+    def __sort_using_ordering(self, ordering):
+        for measurement in self.__measurements:
+            measurement.sort(ordering)
 
     def print(self):
         row_length = self.__print_header()
