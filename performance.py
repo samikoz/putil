@@ -12,10 +12,7 @@ class PerformanceComparator:
 
     sorting in a simple manner: first function that is fastest in most cases, then fastest excluding the first etc."""
 
-    column_width = 20
-
     def __init__(self, functions, count=1000, arguments=()):
-        self.column_width += self.column_width % 4  # make sure divisible by 4
 
         self.__funcs = functions
         self.__args = [self.__wrap_argument(arg) for arg in arguments] if arguments else [VacuousTimedArgument()]
@@ -23,6 +20,8 @@ class PerformanceComparator:
 
         self.__measurements = [self.__measure_argument(argument) for argument in self.__args]
         self.__sort_measurements()
+
+        self.__printer = PerformancePrinter()
 
     @staticmethod
     def __wrap_argument(argument):
@@ -55,21 +54,40 @@ class PerformanceComparator:
             measurement.sort(ordering)
 
     def print(self):
-        row_length = self.__print_header()
-        for measurement in self.__measurements:
-            measurement.print(self.column_width)
-            print(' ' + '-' * (row_length-1))
+        header_length = self.__printer.print_header(self.__funcs, self.__args)
+        self.__printer.print_measurements(self.__measurements, header_length)
 
-    def __print_header(self):
-        header = functools.reduce(lambda s, f: s + (' {0:^' + str(self.column_width) + '} |').format(self.__get_function_description(f)), self.__funcs, '')
+
+class PerformancePrinter:
+    column_width = 20
+
+    def __init__(self):
+        self.column_width += self.column_width % 4
+
+    def print_header(self, functions, arguments):
+        header = functools.reduce(lambda s, f: s + (' {0:^' + str(self.column_width) + '} |').format(self.__get_function_description(f)), functions, '')
         header_length = len(header)
         print(header, end='')
-        header_length += self.__args[0].print_header()
+        header_length += arguments[0].print_header()
         print(' ' + '-' * (header_length-1))
         return header_length
 
     def __get_function_description(self, f):
         return f.__doc__[:self.column_width] if f.__doc__ else f.__name__[:self.column_width]
+
+    def print_measurements(self, measurements, row_length):
+        for measurement in measurements:
+            measurement.print(self)
+            print(' ' + '-' * (row_length-1))
+
+    def format_single_measurement(self):
+        return ' {0:<' + str((self.column_width//2)-2) + '.2e}s '
+
+    def format_nontrivial_ratio(self):
+        return ' {0:+' + str((self.column_width//2)-2) + '.2f}% |'
+
+    def format_trivial_ratio(self):
+        return ' ' * (self.column_width//4) + '-' + ' ' * (self.column_width//4) + '|'
 
 
 class PerformanceMeasurement:
@@ -103,22 +121,14 @@ class PerformanceMeasurement:
         self.__results = [self.__results[i] for i in order]
         self.__percent_ratios = [self.__percent_ratios[i] for i in order]
 
-    def print(self, width):
+    def print(self, printer):
         for result, ratio in zip(self.__results, self.__percent_ratios):
-            print(self.__format_single_measurement(result, width), end='')
-            print(self.__format_single_ratio(ratio, width), end='')
+            print(printer.format_single_measurement().format(result), end='')
+            if abs(ratio) > 1e-5:
+                print(printer.format_nontrivial_ratio().format(ratio), end='')
+            else:
+                print(printer.format_trivial_ratio().format(ratio), end='')
         self.__arg.print()
-
-    @staticmethod
-    def __format_single_measurement(elapsed, width):
-        return (' {0:<' + str((width//2)-1) + '.2e} ').format(elapsed)
-
-    @staticmethod
-    def __format_single_ratio(ratio, width):
-        if abs(ratio) > 1e-5:
-            return (' {0:+' + str((width//2)-2) + '.2f}% |').format(ratio)
-        else:
-            return ' ' * (width//4) + '-' + ' ' * (width//4) + '|'
 
 
 class TimedArgument(metaclass=abc.ABCMeta):
