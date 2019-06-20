@@ -5,28 +5,29 @@ import itertools
 from collections import Counter
 
 
-class Timings:
+class PerformanceComparator:
     """only single-positional-argument functions are supported.
     if need be for more arguments, use functools.partial.
 
     sorting in a simple manner: first function that is fastest in most cases, then fastest excluding the first etc."""
 
+    column_width = 20
+
     def __init__(self, functions, count=1000, arguments=()):
-        self.__column_width = 20
-        self.__column_width += self.__column_width % 4  # make sure divisible by 4
+        self.column_width += self.column_width % 4  # make sure divisible by 4
 
         self.__funcs = functions
-        self.__args = [RegularTimingArgument(arg) for arg in arguments] if arguments else [VacuousTimingArgument()]
+        self.__args = [RegularTimedArgument(arg) for arg in arguments] if arguments else [VacuousTimedArgument()]
         self.__count = count
 
         self.__measurements = [self.__measure_argument(argument) for argument in self.__args]
         self.__sort_within_measurements(self.__measurements)
 
     def __measure_argument(self, argument):
-        return Measurement(self.__funcs, self.__count, argument)
+        return PerformanceMeasurement(self.__funcs, self.__count, argument)
 
     def __sort_within_measurements(self, measurements):
-        sorted_indices = [measurement.get_indices_in_sorted_order() for measurement in measurements]
+        sorted_indices = [measurement.get_indices_sorted_by_timings() for measurement in measurements]
 
         resultant = []
         for n in range(len(self.__funcs)):
@@ -36,16 +37,16 @@ class Timings:
                 indices.remove(most_common)
 
         for measurement in measurements:
-            measurement.sort_with_order(resultant)
+            measurement.sort(resultant)
 
     def print(self):
         row_length = self.__print_header()
         for measurement in self.__measurements:
-            measurement.print(self.__column_width)
+            measurement.print(self.column_width)
             print(' ' + '-' * (row_length-1))
 
     def __print_header(self):
-        header = functools.reduce(lambda s, f: s + (' {0:^' + str(self.__column_width) + '} |').format(self.__get_function_description(f)), self.__funcs, '')
+        header = functools.reduce(lambda s, f: s + (' {0:^' + str(self.column_width) + '} |').format(self.__get_function_description(f)), self.__funcs, '')
         header_length = len(header)
         print(header, end='')
         header_length += self.__args[0].print_header()
@@ -53,10 +54,10 @@ class Timings:
         return header_length
 
     def __get_function_description(self, f):
-        return f.__doc__[:self.__column_width] if f.__doc__ else f.__name__[:self.__column_width]
+        return f.__doc__[:self.column_width] if f.__doc__ else f.__name__[:self.column_width]
 
 
-class Measurement:
+class PerformanceMeasurement:
     def __init__(self, functions, count, argument):
         self.__funcs = functions
         self.__count = count
@@ -68,7 +69,7 @@ class Measurement:
     def __measure_single(self, f):
         elapsed = 0
         for _ in itertools.repeat(None, self.__count):
-            elapsed += self.__arg.apply_timed(f)
+            elapsed += self.__arg.apply(f)
 
         return elapsed/self.__count
 
@@ -77,13 +78,13 @@ class Measurement:
         least_result = min(timing_results)
         return [result/least_result*100 - 100 for result in timing_results]
 
-    def get_indices_in_sorted_order(self):
+    def get_indices_sorted_by_timings(self):
         return list(map(
             lambda index_with_result: index_with_result[0],
             sorted(enumerate(self.__results), key=lambda x: x[1])
         ))
 
-    def sort_with_order(self, order):
+    def sort(self, order):
         self.__results = [self.__results[i] for i in order]
         self.__percent_ratios = [self.__percent_ratios[i] for i in order]
 
@@ -105,9 +106,9 @@ class Measurement:
             return ' ' * (width//4) + '-' + ' ' * (width//4) + '|'
 
 
-class TimingArgument(metaclass=abc.ABCMeta):
+class TimedArgument(metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def apply_timed(self, f):
+    def apply(self, f):
         pass
 
     @abc.abstractmethod
@@ -119,11 +120,11 @@ class TimingArgument(metaclass=abc.ABCMeta):
         pass
 
 
-class RegularTimingArgument(TimingArgument):
+class RegularTimedArgument(TimedArgument):
     def __init__(self, arg):
         self.__value = arg
 
-    def apply_timed(self, f):
+    def apply(self, f):
         start = time.time()
         f(self.__value.value if hasattr(self.__value, 'value') else self.__value)
         end = time.time()
@@ -140,8 +141,8 @@ class RegularTimingArgument(TimingArgument):
         return 13
 
 
-class VacuousTimingArgument(TimingArgument):
-    def apply_timed(self, f):
+class VacuousTimedArgument(TimedArgument):
+    def apply(self, f):
         start = time.time()
         f()
         end = time.time()
@@ -167,8 +168,8 @@ if __name__ == '__main__':
         description = "twentyfive-twentyfive"
         value = 25
 
-    Timings([function_one, described_function], 1000, (12, TwentyFive())).print()
+    PerformanceComparator([function_one, described_function], 1000, (12, TwentyFive())).print()
 
     print()
 
-    Timings([lambda: function_one(10), lambda: described_function(7)]).print()
+    PerformanceComparator([lambda: function_one(10), lambda: described_function(7)]).print()
