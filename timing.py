@@ -2,13 +2,14 @@ import abc
 import time
 import functools
 import itertools
+from collections import Counter
 
 
 class Timings:
     """only single-positional-argument functions are supported.
-    if need be for more arguments, use functools.partial."""
+    if need be for more arguments, use functools.partial.
 
-    # sorting logic
+    sorting in a simple manner: first function that is fastest in most cases, then fastest excluding the first etc."""
 
     def __init__(self, functions, count=1000, arguments=()):
         self.__column_width = 20
@@ -19,9 +20,23 @@ class Timings:
         self.__count = count
 
         self.__measurements = [self.__measure_argument(argument) for argument in self.__args]
+        self.__sort_within_measurements(self.__measurements)
 
     def __measure_argument(self, argument):
         return Measurement(self.__funcs, self.__count, argument)
+
+    def __sort_within_measurements(self, measurements):
+        sorted_indices = [measurement.get_indices_in_sorted_order() for measurement in measurements]
+
+        resultant = []
+        for n in range(len(self.__funcs)):
+            most_common = Counter([indices[0] for indices in sorted_indices]).most_common(1)[0][0]
+            resultant.append(most_common)
+            for indices in sorted_indices:
+                indices.remove(most_common)
+
+        for measurement in measurements:
+            measurement.sort_with_order(resultant)
 
     def print(self):
         row_length = self.__print_header()
@@ -61,6 +76,16 @@ class Measurement:
     def __compute_ratios(timing_results):
         least_result = min(timing_results)
         return [result/least_result*100 - 100 for result in timing_results]
+
+    def get_indices_in_sorted_order(self):
+        return list(map(
+            lambda index_with_result: index_with_result[0],
+            sorted(enumerate(self.__results), key=lambda x: x[1])
+        ))
+
+    def sort_with_order(self, order):
+        self.__results = [self.__results[i] for i in order]
+        self.__percent_ratios = [self.__percent_ratios[i] for i in order]
 
     def print(self, width):
         for result, ratio in zip(self.__results, self.__percent_ratios):
