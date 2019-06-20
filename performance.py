@@ -8,6 +8,7 @@ from collections import Counter
 class PerformanceComparator:
     """only single-positional-argument functions are supported.
     if need be for more arguments, use functools.partial.
+    arguments can be instances with fields 'value' and 'description'
 
     sorting in a simple manner: first function that is fastest in most cases, then fastest excluding the first etc."""
 
@@ -17,11 +18,18 @@ class PerformanceComparator:
         self.column_width += self.column_width % 4  # make sure divisible by 4
 
         self.__funcs = functions
-        self.__args = [RegularTimedArgument(arg) for arg in arguments] if arguments else [VacuousTimedArgument()]
+        self.__args = [self.__wrap_argument(arg) for arg in arguments] if arguments else [VacuousTimedArgument()]
         self.__count = count
 
         self.__measurements = [self.__measure_argument(argument) for argument in self.__args]
         self.__sort_within_measurements(self.__measurements)
+
+    @staticmethod
+    def __wrap_argument(argument):
+        if hasattr(argument, 'value') and hasattr(argument, 'description'):
+            return RegularTimedArgument(argument.value, argument.description)
+        else:
+            return RegularTimedArgument(argument)
 
     def __measure_argument(self, argument):
         return PerformanceMeasurement(self.__funcs, self.__count, argument)
@@ -121,20 +129,18 @@ class TimedArgument(metaclass=abc.ABCMeta):
 
 
 class RegularTimedArgument(TimedArgument):
-    def __init__(self, arg):
-        self.__value = arg
+    def __init__(self, argument, description=None):
+        self.value = argument
+        self.description = description or str(argument)
 
     def apply(self, f):
         start = time.time()
-        f(self.__value.value if hasattr(self.__value, 'value') else self.__value)
+        f(self.value)
         end = time.time()
         return end - start
 
     def print(self):
-        if hasattr(self.__value, 'description'):
-            print(f'| {self.__value.description[:9]:>9} |')
-        else:
-            print(f'| {str(self.__value)[:9]:>9} |')
+        print(f'| {self.description[:9]:>9} |')
 
     def print_header(self):
         print('| arguments |')
