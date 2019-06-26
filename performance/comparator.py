@@ -1,64 +1,84 @@
-import abc
 import time
 import functools
 import itertools
 from collections import Counter
 
+from typing import List, Callable, Any
+from performance_types import Comparator, Printer, Measurement, TimedArgument
 
-class PerformanceComparator:
+
+class PerformanceComparator(Comparator):
     """only single-positional-argument functions are supported.
     if need be for more arguments, use functools.partial.
     arguments can be instances with fields 'value' and 'description'
 
     sorting in a simple manner: first function that is fastest in most cases, then fastest excluding the first etc."""
 
-    def __init__(self, functions, count=1000, arguments=()):
+    def __init__(self, functions: List[Callable], arguments: List[Any] = (), count: int = 1000) -> None:
 
-        self.__funcs = functions
-        self.__args = [self.__wrap_argument(arg) for arg in arguments] if arguments else [VacuousTimedArgument()]
-        self.__count = count
+        self.__funcs: List[Callable] = functions
+        self.__args: List[TimedArgument] = self.__wrap_arguments(arguments)
+        self.__count: int = count
 
-        self.__measurements = [self.__measure_argument(argument) for argument in self.__args]
-        self.__sort_measurements()
+        self.__measurements: List[Measurement] = self.__measure_arguments()
+        self.__sort_measured_functions()
 
-        self.__printer = PerformancePrinter()
+        self.__printer: Printer = PerformancePrinter()
+
+    def __wrap_arguments(self, arguments: List[Any]) -> List[TimedArgument]:
+        return [self.__wrap_regular_argument(arg) for arg in arguments] if arguments else [VacuousTimedArgument()]
 
     @staticmethod
-    def __wrap_argument(argument):
+    def __wrap_regular_argument(argument: Any) -> TimedArgument:
         if hasattr(argument, 'value') and hasattr(argument, 'description'):
             return RegularTimedArgument(argument.value, argument.description)
         else:
             return RegularTimedArgument(argument)
 
-    def __measure_argument(self, argument):
-        return PerformanceMeasurement(self.__funcs, self.__count, argument)
+    def __measure_arguments(self) -> List[Measurement]:
+        return [PerformanceMeasurement(self.__funcs, argument, self.__count) for argument in self.__args]
 
-    def __sort_measurements(self):
-        ordering = self.__produce_final_ordering()
+    def __sort_measured_functions(self) -> None:
+        ordering: List[int] = self.__produce_final_ordering()
         self.__sort_using_ordering(ordering)
 
-    def __produce_final_ordering(self):
-        sorted_indices = [measurement.get_indices_sorted_by_timings() for measurement in self.__measurements]
+    def __produce_final_ordering(self) -> List[int]:
+        sorted_function_indices_within_measurements: List[List[int]] = self.__get_function_indices_sorted_by_timings()
 
-        resultant = []
+        return self.__produce_ordering_by_the_number_of_fastest_results(sorted_function_indices_within_measurements)
+
+    def __get_function_indices_sorted_by_timings(self) -> List[List[int]]:
+        return [measurement.get_indices_sorted_by_timings() for measurement in self.__measurements]
+
+    def __produce_ordering_by_the_number_of_fastest_results(self, sorted_indices: List[List[int]]) -> List[int]:
+        resultant_ordering: List[int] = []
         for n in range(len(self.__funcs)):
-            most_common = Counter([indices[0] for indices in sorted_indices]).most_common(1)[0][0]
-            resultant.append(most_common)
-            for indices in sorted_indices:
-                indices.remove(most_common)
+            most_common: int = self.__get_index_of_fastest_function(sorted_indices)
+            resultant_ordering.append(most_common)
+            sorted_indices: List[List[int]] = self.__remove_index_of_fastest_function(most_common, sorted_indices)
 
-        return resultant
+        return resultant_ordering
 
-    def __sort_using_ordering(self, ordering):
+    @staticmethod
+    def __get_index_of_fastest_function(sorted_indices: List[List[int]]) -> int:
+        return Counter([indices[0] for indices in sorted_indices]).most_common(1)[0][0]
+
+    @staticmethod
+    def __remove_index_of_fastest_function(index: int, sorted_indices: List[List[int]]) -> List[List[int]]:
+        for indices in sorted_indices:
+            indices.remove(index)
+        return sorted_indices
+
+    def __sort_using_ordering(self, ordering: List[int]):
         for measurement in self.__measurements:
             measurement.sort(ordering)
 
-    def print(self):
-        header_length = self.__printer.print_header(self.__funcs, self.__args)
+    def print(self) -> None:
+        header_length: int = self.__printer.print_header(self.__funcs, self.__args)
         self.__printer.print_measurements(self.__measurements, header_length)
 
 
-class PerformancePrinter:
+class PerformancePrinter(Printer):
     column_width = 20
 
     def __init__(self):
@@ -90,8 +110,8 @@ class PerformancePrinter:
         return ' ' * (self.column_width//4) + '-' + ' ' * (self.column_width//4) + '|'
 
 
-class PerformanceMeasurement:
-    def __init__(self, functions, count, argument):
+class PerformanceMeasurement(Measurement):
+    def __init__(self, functions, argument, count):
         self.__funcs = functions
         self.__count = count
         self.__arg = argument
@@ -129,20 +149,6 @@ class PerformanceMeasurement:
             else:
                 print(printer.format_trivial_ratio().format(ratio), end='')
         self.__arg.print()
-
-
-class TimedArgument(metaclass=abc.ABCMeta):
-    @abc.abstractmethod
-    def apply(self, f):
-        pass
-
-    @abc.abstractmethod
-    def print(self):
-        pass
-
-    @abc.abstractmethod
-    def print_header(self):
-        pass
 
 
 class RegularTimedArgument(TimedArgument):
@@ -191,7 +197,7 @@ if __name__ == '__main__':
         description = "twentyfive-twentyfive"
         value = 25
 
-    PerformanceComparator([function_one, described_function], 1000, (12, TwentyFive())).print()
+    PerformanceComparator([function_one, described_function], (12, TwentyFive())).print()
 
     print()
 
