@@ -13,19 +13,19 @@ class Printer(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def print_measurements(self, measurements, row_length):
+    def print_measurements_row(self, measurements, row_length):
         pass
 
     @abc.abstractmethod
-    def format_single_measurement(self):
+    def get_single_measurement_format(self):
         pass
 
     @abc.abstractmethod
-    def format_nontrivial_ratio(self):
+    def get_nontrivial_ratio_format(self):
         pass
 
     @abc.abstractmethod
-    def format_trivial_ratio(self):
+    def get_trivial_ratio_format(self):
         pass
 
 

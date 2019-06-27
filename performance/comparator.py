@@ -1,10 +1,10 @@
 import time
-import functools
 import itertools
 from collections import Counter
 
 from typing import List, Callable, Any
 from performance_types import Comparator, Printer, Measurement, TimedArgument
+from printer import PerformancePrinter
 
 
 class PerformanceComparator(Comparator):
@@ -75,39 +75,7 @@ class PerformanceComparator(Comparator):
 
     def print(self) -> None:
         header_length: int = self.__printer.print_header(self.__funcs, self.__args)
-        self.__printer.print_measurements(self.__measurements, header_length)
-
-
-class PerformancePrinter(Printer):
-    column_width = 20
-
-    def __init__(self):
-        self.column_width += self.column_width % 4
-
-    def print_header(self, functions, arguments):
-        header = functools.reduce(lambda s, f: s + (' {0:^' + str(self.column_width) + '} |').format(self.__get_function_description(f)), functions, '')
-        header_length = len(header)
-        print(header, end='')
-        header_length += arguments[0].print_header()
-        print(' ' + '-' * (header_length-1))
-        return header_length
-
-    def __get_function_description(self, f):
-        return f.__doc__[:self.column_width] if f.__doc__ else f.__name__[:self.column_width]
-
-    def print_measurements(self, measurements, row_length):
-        for measurement in measurements:
-            measurement.print(self)
-            print(' ' + '-' * (row_length-1))
-
-    def format_single_measurement(self):
-        return ' {0:<' + str((self.column_width//2)-2) + '.2e}s '
-
-    def format_nontrivial_ratio(self):
-        return ' {0:+' + str((self.column_width//2)-2) + '.2f}% |'
-
-    def format_trivial_ratio(self):
-        return ' ' * (self.column_width//4) + '-' + ' ' * (self.column_width//4) + '|'
+        self.__printer.print_measurements_row(self.__measurements, header_length)
 
 
 class PerformanceMeasurement(Measurement):
@@ -143,11 +111,11 @@ class PerformanceMeasurement(Measurement):
 
     def print(self, printer):
         for result, ratio in zip(self.__results, self.__percent_ratios):
-            print(printer.format_single_measurement().format(result), end='')
+            print(printer.get_single_measurement_format().format(result), end='')
             if abs(ratio) > 1e-5:
-                print(printer.format_nontrivial_ratio().format(ratio), end='')
+                print(printer.get_nontrivial_ratio_format().format(ratio), end='')
             else:
-                print(printer.format_trivial_ratio().format(ratio), end='')
+                print(printer.get_trivial_ratio_format().format(ratio), end='')
         self.__arg.print()
 
 
