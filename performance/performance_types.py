@@ -5,7 +5,7 @@ from typing import Callable, List, Any
 
 class TimedArgument(metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def apply(self, f: Callable) -> None:
+    def apply(self, f: Callable) -> float:
         pass
 
     @abc.abstractmethod
@@ -13,7 +13,7 @@ class TimedArgument(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def print_header(self) -> None:
+    def print_header(self) -> int:
         pass
 
 

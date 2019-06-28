@@ -1,10 +1,10 @@
-import time
 from collections import Counter
 
 from typing import List, Callable, Any
 from performance_types import Comparator, Printer, Measurement, TimedArgument
 from printer import PerformancePrinter
 from measurement import PerformanceMeasurement
+from argument import RegularTimedArgument, VacuousTimedArgument
 
 
 class PerformanceComparator(Comparator):
@@ -76,40 +76,6 @@ class PerformanceComparator(Comparator):
     def print(self) -> None:
         header_length: int = self.__printer.print_header(self.__funcs, self.__args)
         self.__printer.print_measurements_row(self.__measurements, header_length)
-
-
-class RegularTimedArgument(TimedArgument):
-    def __init__(self, argument, description=None):
-        self.value = argument
-        self.description = description or str(argument)
-
-    def apply(self, f):
-        start = time.time()
-        f(self.value)
-        end = time.time()
-        return end - start
-
-    def print(self):
-        print(f'| {self.description[:9]:>9} |')
-
-    def print_header(self):
-        print('| arguments |')
-        return 13
-
-
-class VacuousTimedArgument(TimedArgument):
-    def apply(self, f):
-        start = time.time()
-        f()
-        end = time.time()
-        return end - start
-
-    def print(self):
-        print()
-
-    def print_header(self):
-        print()
-        return 0
 
 
 if __name__ == '__main__':
