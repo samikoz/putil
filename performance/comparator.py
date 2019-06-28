@@ -8,11 +8,15 @@ from argument import RegularTimedArgument, VacuousTimedArgument
 
 
 class PerformanceComparator(Comparator):
-    """only single-positional-argument functions are supported.
-    if need be for more arguments, use functools.partial.
-    arguments can be instances with fields 'value' and 'description'
+    """class measuring time elapsed during execution of functions.
+    it compares several functions executing several arguments (one at a time) given number of times.
 
-    sorting in a simple manner: first function that is fastest in most cases, then fastest excluding the first etc."""
+    results are printed in a table, each row being the execution time and percent describing how much longer
+    the execution took compared with the shortest time.
+    columns correspond to functions; the column name is taken from the documentation string of a function if present,
+    otherwise it's just the function name.
+    rows correspond to arguments; to customise the name of the row and argument can be passed as an instance of a class
+    with fields 'description' and 'value'."""
 
     def __init__(self, functions: Sequence[Callable], arguments: Sequence[Any] = (), count: int = 1000) -> None:
 
