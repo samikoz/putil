@@ -1,10 +1,10 @@
 import time
-import itertools
 from collections import Counter
 
 from typing import List, Callable, Any
 from performance_types import Comparator, Printer, Measurement, TimedArgument
 from printer import PerformancePrinter
+from measurement import PerformanceMeasurement
 
 
 class PerformanceComparator(Comparator):
@@ -76,47 +76,6 @@ class PerformanceComparator(Comparator):
     def print(self) -> None:
         header_length: int = self.__printer.print_header(self.__funcs, self.__args)
         self.__printer.print_measurements_row(self.__measurements, header_length)
-
-
-class PerformanceMeasurement(Measurement):
-    def __init__(self, functions, argument, count):
-        self.__funcs = functions
-        self.__count = count
-        self.__arg = argument
-
-        self.__results = [self.__measure_single(f) for f in functions]
-        self.__percent_ratios = self.__compute_ratios(self.__results)
-
-    def __measure_single(self, f):
-        elapsed = 0
-        for _ in itertools.repeat(None, self.__count):
-            elapsed += self.__arg.apply(f)
-
-        return elapsed/self.__count
-
-    @staticmethod
-    def __compute_ratios(timing_results):
-        least_result = min(timing_results)
-        return [result/least_result*100 - 100 for result in timing_results]
-
-    def get_indices_sorted_by_timings(self):
-        return list(map(
-            lambda index_with_result: index_with_result[0],
-            sorted(enumerate(self.__results), key=lambda x: x[1])
-        ))
-
-    def sort(self, order):
-        self.__results = [self.__results[i] for i in order]
-        self.__percent_ratios = [self.__percent_ratios[i] for i in order]
-
-    def print(self, printer):
-        for result, ratio in zip(self.__results, self.__percent_ratios):
-            print(printer.get_single_measurement_format().format(result), end='')
-            if abs(ratio) > 1e-5:
-                print(printer.get_nontrivial_ratio_format().format(ratio), end='')
-            else:
-                print(printer.get_trivial_ratio_format().format(ratio), end='')
-        self.__arg.print()
 
 
 class RegularTimedArgument(TimedArgument):
