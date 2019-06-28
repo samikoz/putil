@@ -1,6 +1,6 @@
 import abc
 
-from typing import Callable, List, Any
+from typing import Callable, List, Any, Sequence
 
 
 class TimedArgument(metaclass=abc.ABCMeta):
@@ -23,7 +23,7 @@ class Measurement(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def sort(self, order: List[int]) -> None:
+    def sort(self, order: Sequence[int]) -> None:
         pass
 
     @abc.abstractmethod
@@ -33,11 +33,11 @@ class Measurement(metaclass=abc.ABCMeta):
 
 class Printer(metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def print_header(self, functions: List[Callable], arguments: List[Any]):
+    def print_header(self, functions: Sequence[Callable], arguments: Sequence[Any]):
         pass
 
     @abc.abstractmethod
-    def print_measurements_row(self, measurements: List[Measurement], row_length) -> None:
+    def print_measurements_row(self, measurements: Sequence[Measurement], row_length) -> None:
         pass
 
     @abc.abstractmethod

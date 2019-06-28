@@ -1,12 +1,12 @@
 import itertools
 
 from performance_types import Measurement, Printer
-from typing import Callable, List, Any
+from typing import Callable, List, Any, Sequence
 
 
 class PerformanceMeasurement(Measurement):
-    def __init__(self, functions: List[Callable], argument: Any, count: int) -> None:
-        self.__funcs: List[Callable] = functions
+    def __init__(self, functions: Sequence[Callable], argument: Any, count: int) -> None:
+        self.__funcs: Sequence[Callable] = functions
         self.__count: int = count
         self.__arg: Any = argument
 
@@ -33,9 +33,9 @@ class PerformanceMeasurement(Measurement):
             sorted(enumerate(self.__results), key=lambda x: x[1])
         ))
 
-    def sort(self, order: List[int]) -> None:
-        self.__results: List[float] = [self.__results[i] for i in order]
-        self.__percent_ratios: List[float] = [self.__percent_ratios[i] for i in order]
+    def sort(self, order: Sequence[int]) -> None:
+        self.__results: Sequence[float] = [self.__results[i] for i in order]
+        self.__percent_ratios: Sequence[float] = [self.__percent_ratios[i] for i in order]
 
     def print(self, printer: Printer) -> None:
         for result, ratio in zip(self.__results, self.__percent_ratios):

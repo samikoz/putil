@@ -1,6 +1,6 @@
 from collections import Counter
 
-from typing import List, Callable, Any
+from typing import List, Callable, Any, Sequence
 from performance_types import Comparator, Printer, Measurement, TimedArgument
 from printer import PerformancePrinter
 from measurement import PerformanceMeasurement
@@ -14,18 +14,18 @@ class PerformanceComparator(Comparator):
 
     sorting in a simple manner: first function that is fastest in most cases, then fastest excluding the first etc."""
 
-    def __init__(self, functions: List[Callable], arguments: List[Any] = (), count: int = 1000) -> None:
+    def __init__(self, functions: Sequence[Callable], arguments: Sequence[Any] = (), count: int = 1000) -> None:
 
-        self.__funcs: List[Callable] = functions
-        self.__args: List[TimedArgument] = self.__wrap_arguments(arguments)
+        self.__funcs: Sequence[Callable] = functions
+        self.__args: Sequence[TimedArgument] = self.__wrap_arguments(arguments)
         self.__count: int = count
 
-        self.__measurements: List[Measurement] = self.__measure_arguments()
+        self.__measurements: Sequence[Measurement] = self.__measure_arguments()
         self.__sort_measured_functions()
 
         self.__printer: Printer = PerformancePrinter()
 
-    def __wrap_arguments(self, arguments: List[Any]) -> List[TimedArgument]:
+    def __wrap_arguments(self, arguments: Sequence[Any]) -> List[TimedArgument]:
         return [self.__wrap_regular_argument(arg) for arg in arguments] if arguments else [VacuousTimedArgument()]
 
     @staticmethod
@@ -43,33 +43,33 @@ class PerformanceComparator(Comparator):
         self.__sort_using_ordering(ordering)
 
     def __produce_final_ordering(self) -> List[int]:
-        sorted_function_indices_within_measurements: List[List[int]] = self.__get_function_indices_sorted_by_timings()
+        sorted_function_indices: Sequence[List[int]] = self.__get_function_indices_sorted_by_timings()
 
-        return self.__produce_ordering_by_the_number_of_fastest_results(sorted_function_indices_within_measurements)
+        return self.__produce_ordering_by_the_number_of_fastest_results(sorted_function_indices)
 
-    def __get_function_indices_sorted_by_timings(self) -> List[List[int]]:
+    def __get_function_indices_sorted_by_timings(self) -> Sequence[List[int]]:
         return [measurement.get_indices_sorted_by_timings() for measurement in self.__measurements]
 
-    def __produce_ordering_by_the_number_of_fastest_results(self, sorted_indices: List[List[int]]) -> List[int]:
+    def __produce_ordering_by_the_number_of_fastest_results(self, sorted_indices: Sequence[List[int]]) -> List[int]:
         resultant_ordering: List[int] = []
         for n in range(len(self.__funcs)):
             most_common: int = self.__get_index_of_fastest_function(sorted_indices)
             resultant_ordering.append(most_common)
-            sorted_indices: List[List[int]] = self.__remove_index_of_fastest_function(most_common, sorted_indices)
+            sorted_indices: Sequence[List[int]] = self.__remove_index_of_fastest_function(most_common, sorted_indices)
 
         return resultant_ordering
 
     @staticmethod
-    def __get_index_of_fastest_function(sorted_indices: List[List[int]]) -> int:
+    def __get_index_of_fastest_function(sorted_indices: Sequence[List[int]]) -> int:
         return Counter([indices[0] for indices in sorted_indices]).most_common(1)[0][0]
 
     @staticmethod
-    def __remove_index_of_fastest_function(index: int, sorted_indices: List[List[int]]) -> List[List[int]]:
+    def __remove_index_of_fastest_function(index: int, sorted_indices: Sequence[List[int]]) -> Sequence[List[int]]:
         for indices in sorted_indices:
             indices.remove(index)
         return sorted_indices
 
-    def __sort_using_ordering(self, ordering: List[int]):
+    def __sort_using_ordering(self, ordering: Sequence[int]):
         for measurement in self.__measurements:
             measurement.sort(ordering)
 
@@ -79,19 +79,24 @@ class PerformanceComparator(Comparator):
 
 
 if __name__ == '__main__':
+
+    # functions to be measured
     def function_one(value):
         return value**2/13
 
-    def described_function(value):
-        """function_two_two_two_twentytwo"""
+    def function_two(value):
+        """described function"""
         return 156*(value % 12)
 
+    # argument with custom description
     class TwentyFive:
-        description = "twentyfive-twentyfive"
+        description = "described 25"
         value = 25
 
-    PerformanceComparator([function_one, described_function], (12, TwentyFive())).print()
+    # comparison of two functions with two arguments each
+    PerformanceComparator([function_one, function_two], (12, TwentyFive())).print()
 
     print()
 
-    PerformanceComparator([lambda: function_one(10), lambda: described_function(7)]).print()
+    # comparison of two functions without an argument
+    PerformanceComparator([lambda: function_one(10), lambda: function_two(7)]).print()
